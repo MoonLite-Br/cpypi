@@ -1,72 +1,56 @@
 #!/bin/sh
-# Install cpypi so `import cpypi` works from any directory.
-# Usage:
-#   ./install.sh           # user install
-#   ./install.sh --print   # only print the path / export line
+# cpypi — one-step setup for `import cpypi`
+#
+#   git clone https://github.com/MoonLite-Br/cpypi.git
+#   cd cpypi
+#   ./install.sh
+#   cpy -c 'import cpypi; print(cpypi.__version__)'
+#
 set -e
-cd "$(dirname "$0")"
-ROOT="$(pwd)"
+ROOT="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
 PKG="$ROOT/cpypi"
 
 if [ ! -f "$PKG/__init__.cpy" ]; then
-  echo "error: cpypi package not found next to install.sh" >&2
+  echo "error: missing $PKG/__init__.cpy" >&2
   exit 1
 fi
 
-# Prefer a stable location on PATH-searchable disk
-if [ -n "$PREFIX" ] && [ -d "$PREFIX" ]; then
-  DEST="$PREFIX/share/cpypi"
-elif [ -d "$HOME" ]; then
-  DEST="$HOME/.local/share/cpypi"
-else
-  DEST="$ROOT"
-fi
+# Parent of the package dir must be on CPY_PATH
+EXPORT="export CPY_PATH=\"$ROOT\${CPY_PATH:+:\$CPY_PATH}\""
 
-mkdir -p "$DEST"
-# Copy package tree (replace previous install)
-rm -rf "$DEST/cpypi"
-cp -a "$PKG" "$DEST/cpypi"
-
-# Shell snippet to add permanently
-EXPORT_LINE="export CPY_PATH=\"$DEST\${CPY_PATH:+:\$CPY_PATH}\""
-
-add_to_rc() {
-  rc="$1"
-  if [ -f "$rc" ] && grep -q 'CPY_PATH=.*share/cpypi\|# cpypi' "$rc" 2>/dev/null; then
-    echo "already noted in $rc"
-    return
+# Idempotent line in shell rc files
+mark="# cpypi CPY_PATH"
+add_rc() {
+  f="$1"
+  [ -n "$f" ] || return 0
+  touch "$f" 2>/dev/null || return 0
+  if grep -q "cpypi CPY_PATH\|share/cpypi\|$ROOT" "$f" 2>/dev/null; then
+    return 0
   fi
-  if [ -f "$rc" ] || [ -w "$(dirname "$rc")" ]; then
-    printf '\n# cpypi (HTML parser for cpy)\n%s\n' "$EXPORT_LINE" >> "$rc"
-    echo "appended to $rc"
-  fi
+  printf '\n%s\n%s\n' "$mark" "$EXPORT" >> "$f"
+  echo "  + $f"
 }
 
-if [ "${1:-}" = "--print" ]; then
-  echo "$DEST"
-  echo "$EXPORT_LINE"
-  exit 0
-fi
+echo "cpypi root: $ROOT"
 
-# Current session
-export CPY_PATH="$DEST${CPY_PATH:+:$CPY_PATH}"
+# Persist for next terminals
+added=0
+for f in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+  if [ -e "$f" ] || [ -w "$HOME" ]; then
+    before=$(wc -l < "$f" 2>/dev/null || echo 0)
+    add_rc "$f"
+    after=$(wc -l < "$f" 2>/dev/null || echo 0)
+    [ "$after" != "$before" ] && added=1
+  fi
+done
 
-# Persist for common shells
-if [ -n "$PREFIX" ]; then
-  # Termux: also drop a small env hint
-  add_to_rc "$HOME/.bashrc" 2>/dev/null || true
-  add_to_rc "$HOME/.zshrc" 2>/dev/null || true
-else
-  add_to_rc "$HOME/.bashrc" 2>/dev/null || true
-  add_to_rc "$HOME/.zshrc" 2>/dev/null || true
-  add_to_rc "$HOME/.profile" 2>/dev/null || true
-fi
-
-echo "Installed cpypi -> $DEST/cpypi"
-echo "CPY_PATH includes: $DEST"
+# Always print the one line that makes *this* shell work
 echo ""
-echo "Try:"
+echo "Done. In THIS terminal run:"
+echo ""
+echo "  $EXPORT"
+echo ""
+echo "Then:"
 echo "  cpy -c 'import cpypi; print(cpypi.__version__)'"
 echo ""
-echo "If a new shell does not see it, run:"
-echo "  $EXPORT_LINE"
+echo "Note: do not name your script cpypi.cpy — it shadows the package."

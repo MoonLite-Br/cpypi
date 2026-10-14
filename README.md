@@ -1,29 +1,33 @@
 # cpypi
 
-**Super-beta** HTML toolkit for [cpy](https://github.com/MoonLite-Br/Cpy): forgiving parser, small DOM, CSS selectors, URL helpers.
+**Super-beta** HTML toolkit for [cpy](https://github.com/MoonLite-Br/Cpy): parser, DOM, CSS selectors.
 
-API is intentionally close to a thin BeautifulSoup / `html.parser` style — pure `.cpy`, no C extensions.
-
-> Status: **0.1.0-beta**. Expect rough edges. Issues and patches welcome.
+> **0.1.0-beta** — expect rough edges.
 
 ## Install
-
-Needs [cpy](https://github.com/MoonLite-Br/Cpy) on your `PATH`.
 
 ```bash
 git clone https://github.com/MoonLite-Br/cpypi.git
 cd cpypi
 ./install.sh
-# new shells: source ~/.bashrc   (or the export line install.sh prints)
 ```
 
-Manual alternative:
+Copy-paste the `export CPY_PATH=...` line it prints (needed once in the current terminal).  
+New terminals pick it up from `~/.bashrc` / `~/.zshrc` after that.
+
+Or in one step from the repo folder:
 
 ```bash
-export CPY_PATH="/path/to/cpypi:$CPY_PATH"
+source ./env.sh
 ```
 
-(`install.sh` copies the package under `~/.local/share/cpypi` or `$PREFIX/share/cpypi` on Termux and appends `CPY_PATH` to your shell rc.)
+Check:
+
+```bash
+cpy -c 'import cpypi; print(cpypi.__version__)'
+```
+
+**Do not** name your own file `cpypi.cpy` — cpy will import that file instead of this package.
 
 ## Quick start
 
@@ -32,9 +36,8 @@ import cpypi
 
 doc = cpypi.parse(html, url="https://example.com")
 print(doc.title)
-print(doc.select_one("h1.title").text)
-for a in doc.select("a[href^='http']"):
-    print(a["href"], a.get_text(strip=True))
+for a in doc.select("a[href]"):
+    print(a["href"], a.text)
 ```
 
 ```bash
@@ -44,17 +47,12 @@ cpy examples/demo.cpy
 ## Layout
 
 ```
-cpypi/
-  __init__.cpy    # public API
-  core.cpy        # parse(), Document, Element, …
-  selector.cpy    # CSS select / select_one / matches
-  entities.cpy    # unescape / escape
-  url.cpy         # urljoin, quote, urlsplit, …
-  extract.cpy     # links, images, tables, form fields
-install.sh
-examples/demo.cpy
+cpypi/           package (import cpypi)
+install.sh       writes CPY_PATH into your shell rc + prints export line
+env.sh           source ./env.sh  → sets CPY_PATH for this shell
+examples/
 ```
 
 ## License
 
-MIT (same spirit as cpy). Package is experimental software — use at your own risk.
+MIT
