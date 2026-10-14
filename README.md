@@ -1,11 +1,11 @@
-# cpypi → moved
+# cpypi → moved to **htmlx**
 
-This package was renamed to **[xhtml](https://github.com/MoonLite-Br/xhtml)**.
+Package renamed to **[htmlx](https://github.com/MoonLite-Br/htmlx)**.
 
 ```bash
-git clone https://github.com/MoonLite-Br/xhtml.git
-cd xhtml && source ./install.sh
-cpy -c 'import xhtml; print(xhtml.__version__)'
+git clone https://github.com/MoonLite-Br/htmlx.git
+cd htmlx && source ./install.sh
+cpy -c 'import htmlx; print(htmlx.__version__)'
 ```
 
-Use `import xhtml` (not `import cpypi`).
+Use `import htmlx`.
