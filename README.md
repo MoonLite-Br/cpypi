@@ -1,58 +1,46 @@
 # cpypi
 
-**Super-beta** HTML toolkit for [cpy](https://github.com/MoonLite-Br/Cpy): parser, DOM, CSS selectors.
-
-> **0.1.0-beta** — expect rough edges.
+**Super-beta** HTML toolkit for [cpy](https://github.com/MoonLite-Br/Cpy).
 
 ## Install
 
 ```bash
 git clone https://github.com/MoonLite-Br/cpypi.git
 cd cpypi
-./install.sh
+source ./install.sh
+cpy -c 'import cpypi; print(cpypi.__version__)'
 ```
 
-Copy-paste the `export CPY_PATH=...` line it prints (needed once in the current terminal).  
-New terminals pick it up from `~/.bashrc` / `~/.zshrc` after that.
+`source ./install.sh` sets `CPY_PATH` **now** and writes it into `~/.bashrc` for next time.
 
-Or in one step from the repo folder:
+Already in the folder?
+
+```bash
+source ./install.sh
+```
+
+Quick one-shot (no rc file):
 
 ```bash
 source ./env.sh
 ```
 
-Check:
+**Important:** do not name your script `cpypi.cpy` — that name hides the package.
 
-```bash
-cpy -c 'import cpypi; print(cpypi.__version__)'
-```
-
-**Do not** name your own file `cpypi.cpy` — cpy will import that file instead of this package.
-
-## Quick start
+## Use
 
 ```python
 import cpypi
-
 doc = cpypi.parse(html, url="https://example.com")
 print(doc.title)
-for a in doc.select("a[href]"):
-    print(a["href"], a.text)
+print(doc.select_one("h1").text)
 ```
 
 ```bash
 cpy examples/demo.cpy
-```
-
-## Layout
-
-```
-cpypi/           package (import cpypi)
-install.sh       writes CPY_PATH into your shell rc + prints export line
-env.sh           source ./env.sh  → sets CPY_PATH for this shell
-examples/
+cpy examples/smoke.cpy
 ```
 
 ## License
 
-MIT
+MIT · **0.1.0-beta**

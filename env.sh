@@ -1,4 +1,12 @@
-# usage:  source ./env.sh
-ROOT="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
-export CPY_PATH="$ROOT${CPY_PATH:+:$CPY_PATH}"
+# source ./env.sh  — set CPY_PATH for this shell only (no rc edit)
+if [ -n "${BASH_SOURCE-}" ]; then
+  _r="$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+  _r="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
+fi
+case ":${CPY_PATH-}:" in
+  *":$_r:"*) ;;
+  *) export CPY_PATH="$_r${CPY_PATH:+:$CPY_PATH}" ;;
+esac
 echo "CPY_PATH=$CPY_PATH"
+unset _r
